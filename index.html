@@ -1,304 +1,211 @@
-<?php
-$site = [
-    'name' => '山川笔记',
-    'description' => '记录技术、阅读与日常思考。',
-];
-
-$posts = [
-    [
-        'slug' => 'build-a-static-blog-with-php',
-        'title' => '用 PHP 搭建一个静态博客',
-        'date' => '2026-09-06',
-        'category' => '技术',
-        'excerpt' => '不使用数据库，只通过 PHP 数组和模板即可快速构建一个可部署的个人博客。',
-        'content' => [
-            '静态博客的核心是内容简单、加载快速、维护成本低。',
-            '这个示例将文章信息存放在 PHP 数组中。后续也可以改为读取 Markdown 文件，让写作和页面展示分离。',
-        ],
-    ],
-    [
-        'slug' => 'reading-notes',
-        'title' => '阅读笔记：把知识变成自己的系统',
-        'date' => '2026-08-28',
-        'category' => '阅读',
-        'excerpt' => '阅读的价值不止于记住内容，更在于建立能反复调用的思考框架。',
-        'content' => [
-            '做笔记不是抄录，而是用自己的语言重新组织观点。',
-            '每次阅读结束后，写下一个结论、一个疑问和一个可行动的想法。',
-        ],
-    ],
-    [
-        'slug' => 'weekly-review',
-        'title' => '每周复盘的三个问题',
-        'date' => '2026-08-20',
-        'category' => '生活',
-        'excerpt' => '用固定问题回顾一周，可以让时间投入变得更清晰。',
-        'content' => [
-            '这一周最值得保留的做法是什么？',
-            '哪些事情消耗了时间，却没有产生相应价值？',
-            '下一周最重要的一件事是什么？',
-        ],
-    ],
-];
-
-function escape(string $value): string
-{
-    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-}
-
-$slug = $_GET['post'] ?? null;
-$currentPost = null;
-
-if ($slug !== null) {
-    foreach ($posts as $post) {
-        if ($post['slug'] === $slug) {
-            $currentPost = $post;
-            break;
-        }
-    }
-}
-
-$pageTitle = $currentPost
-    ? $currentPost['title'] . ' - ' . $site['name']
-    : $site['name'];
-?>
 <!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= escape($pageTitle) ?></title>
-    <style>
-        :root {
-            --background: #f8f8f5;
-            --surface: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
-            --accent: #0f766e;
-            --border: #dce3e5;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>山川笔记</title>
+  <style>
+    :root {
+      --background: #f8f8f5;
+      --surface: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #0f766e;
+      --border: #dce3e5;
+    }
 
-        * {
-            box-sizing: border-box;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        body {
-            margin: 0;
-            background: var(--background);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                "Microsoft YaHei", sans-serif;
-            line-height: 1.8;
-        }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Microsoft YaHei", sans-serif;
+      line-height: 1.8;
+    }
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-        .container {
-            width: min(920px, calc(100% - 40px));
-            margin: 0 auto;
-        }
+    .container {
+      width: min(920px, calc(100% - 40px));
+      margin: 0 auto;
+    }
 
-        header {
-            border-bottom: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.88);
-        }
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.9);
+    }
 
-        .header-inner {
-            min-height: 74px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 74px;
+      gap: 24px;
+    }
 
-        .brand {
-            font-size: 20px;
-            font-weight: 700;
-        }
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+    }
 
-        nav a {
-            color: var(--muted);
-            margin-left: 20px;
-        }
+    nav {
+      display: flex;
+      gap: 20px;
+    }
 
-        nav a:hover,
-        .post-title a:hover,
-        .back-link:hover {
-            color: var(--accent);
-        }
+    nav a {
+      color: var(--muted);
+    }
 
-        main {
-            padding: 52px 0 72px;
-        }
+    nav a:hover,
+    .post-title a:hover {
+      color: var(--accent);
+    }
 
-        .intro {
-            margin-bottom: 38px;
-        }
+    main {
+      padding: 52px 0 72px;
+    }
 
-        .intro h1 {
-            margin: 0 0 8px;
-            font-size: 32px;
-            line-height: 1.3;
-        }
+    .intro {
+      margin-bottom: 38px;
+    }
 
-        .intro p {
-            margin: 0;
-            color: var(--muted);
-        }
+    .intro h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.3;
+    }
 
-        .post-list {
-            display: grid;
-            gap: 16px;
-        }
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+    }
 
-        .post-card {
-            padding: 24px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--surface);
-        }
+    .post-list {
+      display: grid;
+      gap: 16px;
+    }
 
-        .post-meta {
-            color: var(--muted);
-            font-size: 14px;
-        }
+    .post-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
 
-        .category {
-            color: var(--accent);
-            font-weight: 600;
-        }
+    .post-meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
 
-        .post-title {
-            margin: 7px 0 10px;
-            font-size: 23px;
-            line-height: 1.4;
-        }
+    .category {
+      color: var(--accent);
+      font-weight: 600;
+    }
 
-        .post-excerpt {
-            margin: 0;
-            color: #475569;
-        }
+    .post-title {
+      margin: 7px 0 10px;
+      font-size: 23px;
+      line-height: 1.4;
+    }
 
-        article {
-            max-width: 720px;
-        }
+    .post-excerpt {
+      margin: 0;
+      color: #475569;
+    }
 
-        article h1 {
-            margin: 8px 0 12px;
-            font-size: 36px;
-            line-height: 1.3;
-        }
+    footer {
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
 
-        article p {
-            margin: 18px 0;
-            font-size: 17px;
-        }
+    @media (max-width: 600px) {
+      .header-inner {
+        min-height: 64px;
+      }
 
-        .back-link {
-            display: inline-block;
-            margin-bottom: 28px;
-            color: var(--muted);
-        }
+      .intro h1 {
+        font-size: 28px;
+      }
 
-        .not-found {
-            padding: 24px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--surface);
-        }
-
-        footer {
-            padding: 28px 0;
-            border-top: 1px solid var(--border);
-            color: var(--muted);
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .header-inner {
-                min-height: 64px;
-            }
-
-            .intro h1,
-            article h1 {
-                font-size: 28px;
-            }
-
-            .post-card {
-                padding: 20px;
-            }
-        }
-    </style>
+      .post-card {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
-<header>
+  <header>
     <div class="container header-inner">
-        <a class="brand" href="index.php"><?= escape($site['name']) ?></a>
-        <nav>
-            <a href="index.php">文章</a>
-            <a href="#about">关于</a>
-        </nav>
+      <a class="brand" href="index.html">山川笔记</a>
+      <nav>
+        <a href="index.html">文章</a>
+        <a href="#about">关于</a>
+      </nav>
     </div>
-</header>
+  </header>
 
-<main class="container">
-    <?php if ($currentPost): ?>
-        <article>
-            <a class="back-link" href="index.php">&larr; 返回文章列表</a>
-            <div class="post-meta">
-                <span class="category"><?= escape($currentPost['category']) ?></span>
-                ·
-                <time datetime="<?= escape($currentPost['date']) ?>">
-                    <?= escape($currentPost['date']) ?>
-                </time>
-            </div>
+  <main class="container">
+    <section class="intro">
+      <h1>山川笔记</h1>
+      <p>记录技术、阅读与日常思考。</p>
+    </section>
 
-            <h1><?= escape($currentPost['title']) ?></h1>
+    <section class="post-list">
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="category">技术</span> ·
+          <time datetime="2026-09-06">2026-09-06</time>
+        </div>
+        <h2 class="post-title">
+          <a href="build-a-static-blog-with-html.html">用 HTML 搭建一个静态博客</a>
+        </h2>
+        <p class="post-excerpt">
+          不使用数据库和后端程序，只使用 HTML 和 CSS 即可构建一个可部署的个人博客。
+        </p>
+      </article>
 
-            <?php foreach ($currentPost['content'] as $paragraph): ?>
-                <p><?= escape($paragraph) ?></p>
-            <?php endforeach; ?>
-        </article>
-    <?php elseif ($slug !== null): ?>
-        <section class="not-found">
-            <h1>文章不存在</h1>
-            <p><a class="back-link" href="index.php">返回文章列表</a></p>
-        </section>
-    <?php else: ?>
-        <section class="intro">
-            <h1><?= escape($site['name']) ?></h1>
-            <p><?= escape($site['description']) ?></p>
-        </section>
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="category">阅读</span> ·
+          <time datetime="2026-08-28">2026-08-28</time>
+        </div>
+        <h2 class="post-title">
+          <a href="reading-notes.html">阅读笔记：把知识变成自己的系统</a>
+        </h2>
+        <p class="post-excerpt">
+          阅读的价值不止于记住内容，更在于建立能反复调用的思考框架。
+        </p>
+      </article>
 
-        <section class="post-list">
-            <?php foreach ($posts as $post): ?>
-                <article class="post-card">
-                    <div class="post-meta">
-                        <span class="category"><?= escape($post['category']) ?></span>
-                        ·
-                        <time datetime="<?= escape($post['date']) ?>">
-                            <?= escape($post['date']) ?>
-                        </time>
-                    </div>
-                    <h2 class="post-title">
-                        <a href="index.php?post=<?= urlencode($post['slug']) ?>">
-                            <?= escape($post['title']) ?>
-                        </a>
-                    </h2>
-                    <p class="post-excerpt"><?= escape($post['excerpt']) ?></p>
-                </article>
-            <?php endforeach; ?>
-        </section>
-    <?php endif; ?>
-</main>
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="category">生活</span> ·
+          <time datetime="2026-08-20">2026-08-20</time>
+        </div>
+        <h2 class="post-title">
+          <a href="weekly-review.html">每周复盘的三个问题</a>
+        </h2>
+        <p class="post-excerpt">
+          用固定问题回顾一周，可以让时间投入变得更清晰。
+        </p>
+      </article>
+    </section>
+  </main>
 
-<footer id="about">
+  <footer id="about">
     <div class="container">
-        &copy; <?= date('Y') ?> <?= escape($site['name']) ?>
+      &copy; 2026 山川笔记
     </div>
-</footer>
+  </footer>
 </body>
 </html>
